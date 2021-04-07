@@ -138,13 +138,12 @@ public class UserHashedIDMapper extends AbstractIdentityProviderMapper {
         AssertionType assertion = (AssertionType) context.getContextData().get(SAMLEndpoint.SAML_ASSERTION);
         String entityId = assertion.getIssuer().getValue(); //authenticating authority
 
-        String attributeName = "";
         String attributeValue = context.getId();
 
         String salt = mapperModel.getConfig().get(HASH_ID_SALT);
         String scope = mapperModel.getConfig().get(HASH_ID_SCOPE);
 
-        String identifier = attributeName + ":" + attributeValue + "!" + entityId;
+        String identifier = attributeValue + "!" + entityId;
         if(salt!=null && !salt.isEmpty())
             identifier += ("!" + salt);
 
