@@ -71,6 +71,8 @@ public class UserHashedIDMapper extends AbstractIdentityProviderMapper {
         property.setType(ProviderConfigProperty.STRING_TYPE);
         configProperties.add(property);
 
+        //TODO: enable these options in a future release
+        /*
         property = new ProviderConfigProperty();
         property.setName(SKIP_AUTHORITY_LIST);
         property.setLabel("Skip authorities list");
@@ -91,6 +93,7 @@ public class UserHashedIDMapper extends AbstractIdentityProviderMapper {
         property.setHelpText("A comma ',' delimited list of tags that the auth process should not be executed. Leave empty to disable.");
         property.setType(ProviderConfigProperty.STRING_TYPE);
         configProperties.add(property);
+        */
 
     }
 
@@ -160,32 +163,7 @@ public class UserHashedIDMapper extends AbstractIdentityProviderMapper {
 
     @Override
     public void updateBrokeredUser(KeycloakSession session, RealmModel realm, UserModel user, IdentityProviderMapperModel mapperModel, BrokeredIdentityContext context) {
-//        String attribute = mapperModel.getConfig().get(USER_ATTRIBUTE);
-//        if (StringUtil.isNullOrEmpty(attribute)) {
-//            return;
-//        }
-//        String attributeName = getAttributeNameFromMapperModel(mapperModel);
-//        List<String> attributeValuesInContext = findAttributeValuesInContext(attributeName, context);
-//        if (attribute.equalsIgnoreCase(EMAIL)) {
-//            setIfNotEmptyAndDifferent(user::setEmail, user::getEmail, attributeValuesInContext);
-//        } else if (attribute.equalsIgnoreCase(FIRST_NAME)) {
-//            setIfNotEmptyAndDifferent(user::setFirstName, user::getFirstName, attributeValuesInContext);
-//        } else if (attribute.equalsIgnoreCase(LAST_NAME)) {
-//            setIfNotEmptyAndDifferent(user::setLastName, user::getLastName, attributeValuesInContext);
-//        } else {
-//            List<String> currentAttributeValues = user.getAttributes().get(attribute);
-//            if (attributeValuesInContext == null) {
-//                // attribute no longer sent by brokered idp, remove it
-//                user.removeAttribute(attribute);
-//            } else if (currentAttributeValues == null) {
-//                // new attribute sent by brokered idp, add it
-//                user.setAttribute(attribute, attributeValuesInContext);
-//            } else if (!CollectionUtil.collectionEquals(attributeValuesInContext, currentAttributeValues)) {
-//                // attribute sent by brokered idp has different values as before, update it
-//                user.setAttribute(attribute, attributeValuesInContext);
-//            }
-//            // attribute already set
-//        }
+        //TODO: find out a smart way to update the UserModel from any subsequent login where some of the saml response attributes (inside the context) have changed for the user
     }
 
     @Override
