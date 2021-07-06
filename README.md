@@ -34,15 +34,4 @@ Find the ```<subsystem xmlns="urn:jboss:domain:keycloak-server:1.1">``` node.
 into the ```<providers>``` list
 
 
-
-
-
-
-
-
-3. Copy the file into the **modules/system/layers/keycloak/org/keycloak/keycloak-idp-hashedId-mapper/main** folder in keycloak installation - create the intermediate **keycloak-idp-hashedId-mapper/main** folders.
-4. Add the provided **module.xml** file in the same folder where you previously copied the jar
-5. Edit file standalone/configuration/{standalone.xml or standalone-ha.xml} by adding an entry in the  
-6. Add the entry ``` <module name="org.keycloak.keycloak-idp-hashedId-mapper" services="import"/> ``` in the ```<dependencies>``` section of the ``` modules/system/layers/keycloak/org/keycloak/keycloak-services/main/module.xml``` file
-
 You should then be able to use the SAML IdentityProvider mapper **Hashed User ID Mapper**  as named in the UI droplist. 
