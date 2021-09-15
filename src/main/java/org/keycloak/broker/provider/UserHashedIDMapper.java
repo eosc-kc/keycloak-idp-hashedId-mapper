@@ -15,12 +15,14 @@
  * limitations under the License.
  */
 
-package org.keycloak.broker.provider.mappers;
+package org.keycloak.broker.provider;
 
+import org.keycloak.broker.oidc.KeycloakOIDCIdentityProvider;
+import org.keycloak.broker.oidc.KeycloakOIDCIdentityProviderFactory;
+import org.keycloak.broker.oidc.OIDCIdentityProvider;
 import org.keycloak.broker.oidc.OIDCIdentityProviderFactory;
-import org.keycloak.broker.provider.AbstractIdentityProviderMapper;
-import org.keycloak.broker.provider.BrokeredIdentityContext;
 import org.keycloak.broker.saml.SAMLEndpoint;
+import org.keycloak.broker.saml.SAMLIdentityProvider;
 import org.keycloak.broker.saml.SAMLIdentityProviderFactory;
 import org.keycloak.dom.saml.v2.assertion.AssertionType;
 import org.keycloak.models.IdentityProviderMapperModel;
@@ -29,21 +31,9 @@ import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
 import org.keycloak.provider.ProviderConfigProperty;
-import org.keycloak.social.bitbucket.BitbucketIdentityProviderFactory;
-import org.keycloak.social.facebook.FacebookIdentityProviderFactory;
-import org.keycloak.social.github.GitHubIdentityProviderFactory;
-import org.keycloak.social.gitlab.GitLabIdentityProviderFactory;
+import org.keycloak.representations.JsonWebToken;
+import org.keycloak.social.google.GoogleIdentityProvider;
 import org.keycloak.social.google.GoogleIdentityProviderFactory;
-import org.keycloak.social.instagram.InstagramIdentityProviderFactory;
-import org.keycloak.social.linkedin.LinkedInIdentityProvider;
-import org.keycloak.social.linkedin.LinkedInIdentityProviderFactory;
-import org.keycloak.social.microsoft.MicrosoftIdentityProvider;
-import org.keycloak.social.microsoft.MicrosoftIdentityProviderFactory;
-import org.keycloak.social.openshift.OpenshiftV3IdentityProviderFactory;
-import org.keycloak.social.openshift.OpenshiftV4IdentityProviderFactory;
-import org.keycloak.social.paypal.PayPalIdentityProviderFactory;
-import org.keycloak.social.stackoverflow.StackoverflowIdentityProviderFactory;
-import org.keycloak.social.twitter.TwitterIdentityProviderFactory;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -56,7 +46,12 @@ import java.util.Set;
 
 public class UserHashedIDMapper extends AbstractIdentityProviderMapper {
 
-    public static final String[] COMPATIBLE_PROVIDERS = {ANY_PROVIDER};
+    public static final String[] COMPATIBLE_PROVIDERS = {
+            SAMLIdentityProviderFactory.PROVIDER_ID,
+            OIDCIdentityProviderFactory.PROVIDER_ID,
+            GoogleIdentityProviderFactory.PROVIDER_ID,
+            KeycloakOIDCIdentityProviderFactory.PROVIDER_ID
+    };
 
     private static final List<ProviderConfigProperty> configProperties = new ArrayList<>();
 
@@ -159,15 +154,23 @@ public class UserHashedIDMapper extends AbstractIdentityProviderMapper {
 
         //the id should be computed as:  SHA-256(AttributeValue!AuthenticatingAuthority!SecretSalt)@scope
 
-        AssertionType assertion = (AssertionType) context.getContextData().get(SAMLEndpoint.SAML_ASSERTION);
-        String entityId = assertion.getIssuer().getValue(); //authenticating authority
+        String issuer = "other";
+        if (context.getIdp() instanceof SAMLIdentityProvider)
+            issuer = ((AssertionType) context.getContextData().get(SAMLEndpoint.SAML_ASSERTION)).getIssuer().getValue(); //authenticating authority
+        else if (context.getIdp() instanceof GoogleIdentityProvider) //GoogleIdentityProvider is a subclass of OIDCIdentityProvider, thus, should be checked first
+            issuer = ((JsonWebToken)context.getContextData().get(OIDCIdentityProvider.VALIDATED_ID_TOKEN)).getIssuer();
+        else if (context.getIdp() instanceof KeycloakOIDCIdentityProvider) //KeycloakOIDCIdentityProvider is a subclass of OIDCIdentityProvider, thus, should be checked first
+            issuer = ((JsonWebToken)context.getContextData().get(OIDCIdentityProvider.VALIDATED_ID_TOKEN)).getIssuer();
+        else if (context.getIdp() instanceof OIDCIdentityProvider)
+            issuer = ((JsonWebToken)context.getContextData().get(OIDCIdentityProvider.VALIDATED_ID_TOKEN)).getIssuer();
 
-        String attributeValue = context.getId();
+
+        String userId = context.getId();
 
         String salt = mapperModel.getConfig().get(HASH_ID_SALT);
         String scope = mapperModel.getConfig().get(HASH_ID_SCOPE);
 
-        String identifier = attributeValue + "!" + entityId;
+        String identifier = userId + "!" + issuer;
         if(salt!=null && !salt.isEmpty())
             identifier += ("!" + salt);
 
@@ -186,12 +189,12 @@ public class UserHashedIDMapper extends AbstractIdentityProviderMapper {
 
     @Override
     public void updateBrokeredUser(KeycloakSession session, RealmModel realm, UserModel user, IdentityProviderMapperModel mapperModel, BrokeredIdentityContext context) {
-        //TODO: find out a smart way to update the UserModel from any subsequent login where some of the saml response attributes (inside the context) have changed for the user
+        //TODO: find out a smart way to update the UserModel from any subsequent login where some of the response attributes (inside the context) have changed for the user
     }
 
     @Override
     public String getHelpText() {
-        return "Generate a new saml attribute to be used as a user identifier.";
+        return "Generate a new user attribute to be used as a unique identifier for the user.";
     }
 
 

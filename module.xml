@@ -5,6 +5,7 @@
     </resources>
 
     <dependencies>
+        <module name="org.keycloak.keycloak-core" services="import"/>
         <module name="org.keycloak.keycloak-server-spi" services="import"/>
         <module name="org.keycloak.keycloak-server-spi-private" services="import"/>
         <module name="org.keycloak.keycloak-saml-core-public" services="import"/>
