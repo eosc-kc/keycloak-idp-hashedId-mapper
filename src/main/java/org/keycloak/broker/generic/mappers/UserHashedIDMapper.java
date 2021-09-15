@@ -15,24 +15,64 @@
  * limitations under the License.
  */
 
-package org.keycloak.broker.saml.mappers;
+package org.keycloak.broker.generic.mappers;
 
+import org.keycloak.broker.oidc.OIDCIdentityProviderFactory;
 import org.keycloak.broker.provider.AbstractIdentityProviderMapper;
 import org.keycloak.broker.provider.BrokeredIdentityContext;
 import org.keycloak.broker.saml.SAMLEndpoint;
 import org.keycloak.broker.saml.SAMLIdentityProviderFactory;
 import org.keycloak.dom.saml.v2.assertion.AssertionType;
-import org.keycloak.models.*;
+import org.keycloak.models.IdentityProviderMapperModel;
+import org.keycloak.models.IdentityProviderSyncMode;
+import org.keycloak.models.KeycloakSession;
+import org.keycloak.models.RealmModel;
+import org.keycloak.models.UserModel;
 import org.keycloak.provider.ProviderConfigProperty;
+import org.keycloak.social.bitbucket.BitbucketIdentityProviderFactory;
+import org.keycloak.social.facebook.FacebookIdentityProviderFactory;
+import org.keycloak.social.github.GitHubIdentityProviderFactory;
+import org.keycloak.social.gitlab.GitLabIdentityProviderFactory;
+import org.keycloak.social.google.GoogleIdentityProviderFactory;
+import org.keycloak.social.instagram.InstagramIdentityProviderFactory;
+import org.keycloak.social.linkedin.LinkedInIdentityProvider;
+import org.keycloak.social.linkedin.LinkedInIdentityProviderFactory;
+import org.keycloak.social.microsoft.MicrosoftIdentityProvider;
+import org.keycloak.social.microsoft.MicrosoftIdentityProviderFactory;
+import org.keycloak.social.openshift.OpenshiftV3IdentityProviderFactory;
+import org.keycloak.social.openshift.OpenshiftV4IdentityProviderFactory;
+import org.keycloak.social.paypal.PayPalIdentityProviderFactory;
+import org.keycloak.social.stackoverflow.StackoverflowIdentityProviderFactory;
+import org.keycloak.social.twitter.TwitterIdentityProviderFactory;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 
 public class UserHashedIDMapper extends AbstractIdentityProviderMapper {
 
-    public static final String[] COMPATIBLE_PROVIDERS = {SAMLIdentityProviderFactory.PROVIDER_ID};
+    public static final String[] COMPATIBLE_PROVIDERS = {
+            SAMLIdentityProviderFactory.PROVIDER_ID,
+            OIDCIdentityProviderFactory.PROVIDER_ID,
+            BitbucketIdentityProviderFactory.PROVIDER_ID,
+            FacebookIdentityProviderFactory.PROVIDER_ID,
+            GitHubIdentityProviderFactory.PROVIDER_ID,
+            GitLabIdentityProviderFactory.PROVIDER_ID,
+            GoogleIdentityProviderFactory.PROVIDER_ID,
+            InstagramIdentityProviderFactory.PROVIDER_ID,
+            LinkedInIdentityProviderFactory.PROVIDER_ID,
+            MicrosoftIdentityProviderFactory.PROVIDER_ID,
+            OpenshiftV3IdentityProviderFactory.PROVIDER_ID,
+            OpenshiftV4IdentityProviderFactory.PROVIDER_ID,
+            PayPalIdentityProviderFactory.PROVIDER_ID,
+            StackoverflowIdentityProviderFactory.PROVIDER_ID,
+            TwitterIdentityProviderFactory.PROVIDER_ID
+    };
 
     private static final List<ProviderConfigProperty> configProperties = new ArrayList<>();
 
@@ -97,7 +137,7 @@ public class UserHashedIDMapper extends AbstractIdentityProviderMapper {
 
     }
 
-    public static final String PROVIDER_ID = "saml-user-hashedid-idp-mapper";
+    public static final String PROVIDER_ID = "user-hashedid-idp-mapper";
 
     @Override
     public boolean supportsSyncMode(IdentityProviderSyncMode syncMode) {
@@ -133,7 +173,7 @@ public class UserHashedIDMapper extends AbstractIdentityProviderMapper {
     @Override
     public void preprocessFederatedIdentity(KeycloakSession session, RealmModel realm, IdentityProviderMapperModel mapperModel, BrokeredIdentityContext context) {
 
-        //the id should be computed as:  SHA-256(AttributeName:AttributeValue!AuthenticatingAuthority!SecretSalt)@scope
+        //the id should be computed as:  SHA-256(AttributeValue!AuthenticatingAuthority!SecretSalt)@scope
 
         AssertionType assertion = (AssertionType) context.getContextData().get(SAMLEndpoint.SAML_ASSERTION);
         String entityId = assertion.getIssuer().getValue(); //authenticating authority
