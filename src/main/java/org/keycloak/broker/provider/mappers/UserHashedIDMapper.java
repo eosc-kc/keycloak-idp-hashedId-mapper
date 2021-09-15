@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.keycloak.broker.generic.mappers;
+package org.keycloak.broker.provider.mappers;
 
 import org.keycloak.broker.oidc.OIDCIdentityProviderFactory;
 import org.keycloak.broker.provider.AbstractIdentityProviderMapper;
@@ -56,23 +56,7 @@ import java.util.Set;
 
 public class UserHashedIDMapper extends AbstractIdentityProviderMapper {
 
-    public static final String[] COMPATIBLE_PROVIDERS = {
-            SAMLIdentityProviderFactory.PROVIDER_ID,
-            OIDCIdentityProviderFactory.PROVIDER_ID,
-            BitbucketIdentityProviderFactory.PROVIDER_ID,
-            FacebookIdentityProviderFactory.PROVIDER_ID,
-            GitHubIdentityProviderFactory.PROVIDER_ID,
-            GitLabIdentityProviderFactory.PROVIDER_ID,
-            GoogleIdentityProviderFactory.PROVIDER_ID,
-            InstagramIdentityProviderFactory.PROVIDER_ID,
-            LinkedInIdentityProviderFactory.PROVIDER_ID,
-            MicrosoftIdentityProviderFactory.PROVIDER_ID,
-            OpenshiftV3IdentityProviderFactory.PROVIDER_ID,
-            OpenshiftV4IdentityProviderFactory.PROVIDER_ID,
-            PayPalIdentityProviderFactory.PROVIDER_ID,
-            StackoverflowIdentityProviderFactory.PROVIDER_ID,
-            TwitterIdentityProviderFactory.PROVIDER_ID
-    };
+    public static final String[] COMPATIBLE_PROVIDERS = {ANY_PROVIDER};
 
     private static final List<ProviderConfigProperty> configProperties = new ArrayList<>();
 
