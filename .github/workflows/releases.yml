@@ -34,7 +34,7 @@ jobs:
           prerelease: false
 
       - name: Upload jar
-        id: upload jar
+        id: upload-jar
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -45,7 +45,7 @@ jobs:
           asset_content_type: application/java-archive
 
       - name: Upload module.xml
-        id: upload xml
+        id: upload-xml
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
