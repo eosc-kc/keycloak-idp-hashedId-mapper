@@ -59,6 +59,7 @@ public class UserHashedIDMapper extends AbstractIdentityProviderMapper {
 
     public static final String HASH_ID_SALT = "hash.id.salt";
     public static final String HASH_ID_SCOPE = "hash.id.scope";
+    public static final String ADD_ISSUER_FLAG = "add.issuer.flag";
     public static final String SKIP_AUTHORITY_LIST = "skip.authority.list";
     public static final String IDP_TAG_WHITELIST = "idp.tag.whitelist";
     public static final String IDP_TAG_BLACKLIST = "idp.tag.blacklist";
@@ -90,6 +91,14 @@ public class UserHashedIDMapper extends AbstractIdentityProviderMapper {
         property.setHelpText("Append a @scope value. You can leave this blank if you don't want to append a scope value.");
         property.setType(ProviderConfigProperty.STRING_TYPE);
         configProperties.add(property);
+
+        property = new ProviderConfigProperty();
+        property.setName(ADD_ISSUER_FLAG);
+        property.setLabel("Add issuer?");
+        property.setHelpText("Whether to include the issuer in the hashed value or not.");
+        property.setType(ProviderConfigProperty.BOOLEAN_TYPE);
+        configProperties.add(property);
+
 
         //TODO: enable these options in a future release
         /*
@@ -165,13 +174,13 @@ public class UserHashedIDMapper extends AbstractIdentityProviderMapper {
         else if (context.getIdp() instanceof OIDCIdentityProvider)
             issuer = ((JsonWebToken)context.getContextData().get(OIDCIdentityProvider.VALIDATED_ID_TOKEN)).getIssuer();
 
-
         String userId = context.getId();
 
         String salt = mapperModel.getConfig().get(HASH_ID_SALT);
         String scope = mapperModel.getConfig().get(HASH_ID_SCOPE);
+        boolean addIssuer = "true".equals(mapperModel.getConfig().get(ADD_ISSUER_FLAG));
 
-        String identifier = userId + "!" + issuer;
+        String identifier = userId + (addIssuer ? "!" + issuer : "");
         if(salt!=null && !salt.isEmpty())
             identifier += ("!" + salt);
 
