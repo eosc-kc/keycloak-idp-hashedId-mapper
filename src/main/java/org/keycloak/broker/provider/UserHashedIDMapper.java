@@ -17,13 +17,10 @@
 
 package org.keycloak.broker.provider;
 
-import org.keycloak.broker.oidc.KeycloakOIDCIdentityProvider;
-import org.keycloak.broker.oidc.KeycloakOIDCIdentityProviderFactory;
+import org.keycloak.broker.oidc.AbstractOAuth2IdentityProvider;
 import org.keycloak.broker.oidc.OIDCIdentityProvider;
-import org.keycloak.broker.oidc.OIDCIdentityProviderFactory;
 import org.keycloak.broker.saml.SAMLEndpoint;
 import org.keycloak.broker.saml.SAMLIdentityProvider;
-import org.keycloak.broker.saml.SAMLIdentityProviderFactory;
 import org.keycloak.dom.saml.v2.assertion.AssertionType;
 import org.keycloak.models.IdentityProviderMapperModel;
 import org.keycloak.models.IdentityProviderSyncMode;
@@ -32,8 +29,6 @@ import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
 import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.representations.JsonWebToken;
-import org.keycloak.social.google.GoogleIdentityProvider;
-import org.keycloak.social.google.GoogleIdentityProviderFactory;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -43,15 +38,16 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 
 public class UserHashedIDMapper extends AbstractIdentityProviderMapper {
 
+    private static final Logger logger = Logger.getLogger(UserHashedIDMapper.class.getName());
+
     public static final String[] COMPATIBLE_PROVIDERS = {
-            SAMLIdentityProviderFactory.PROVIDER_ID,
-            OIDCIdentityProviderFactory.PROVIDER_ID,
-            GoogleIdentityProviderFactory.PROVIDER_ID,
-            KeycloakOIDCIdentityProviderFactory.PROVIDER_ID
+            IdentityProviderMapper.ANY_PROVIDER
     };
 
     private static final List<ProviderConfigProperty> configProperties = new ArrayList<>();
@@ -167,12 +163,13 @@ public class UserHashedIDMapper extends AbstractIdentityProviderMapper {
         String issuer = "other";
         if (context.getIdp() instanceof SAMLIdentityProvider)
             issuer = ((AssertionType) context.getContextData().get(SAMLEndpoint.SAML_ASSERTION)).getIssuer().getValue(); //authenticating authority
-        else if (context.getIdp() instanceof GoogleIdentityProvider) //GoogleIdentityProvider is a subclass of OIDCIdentityProvider, thus, should be checked first
+        else if (context.getIdp() instanceof OIDCIdentityProvider) // OIDCIdentityProvider is a subclass of AbstractOAuth2IdentityProvider
             issuer = ((JsonWebToken)context.getContextData().get(OIDCIdentityProvider.VALIDATED_ID_TOKEN)).getIssuer();
-        else if (context.getIdp() instanceof KeycloakOIDCIdentityProvider) //KeycloakOIDCIdentityProvider is a subclass of OIDCIdentityProvider, thus, should be checked first
-            issuer = ((JsonWebToken)context.getContextData().get(OIDCIdentityProvider.VALIDATED_ID_TOKEN)).getIssuer();
-        else if (context.getIdp() instanceof OIDCIdentityProvider)
-            issuer = ((JsonWebToken)context.getContextData().get(OIDCIdentityProvider.VALIDATED_ID_TOKEN)).getIssuer();
+        else if (context.getIdp() instanceof AbstractOAuth2IdentityProvider) {
+            issuer = context.getIdpConfig().getProviderId();
+        }
+
+        StringBuilder plainText = new StringBuilder();
 
         String userId = context.getId();
 
@@ -184,15 +181,19 @@ public class UserHashedIDMapper extends AbstractIdentityProviderMapper {
         if(salt!=null && !salt.isEmpty())
             identifier += ("!" + salt);
 
+        plainText.append(identifier);
+
         identifier = getHash(identifier);
 
-        if(scope!=null && !scope.isEmpty())
+        if(scope!=null && !scope.isEmpty()) {
             identifier += ("@" + scope);
-
+            plainText.append("@" + scope);
+        }
 
         String attribute = mapperModel.getConfig().get(USER_ATTRIBUTE);
         context.setUserAttribute(attribute, identifier);
 
+        logger.log(Level.FINE, plainText.toString());
     }
 
 
