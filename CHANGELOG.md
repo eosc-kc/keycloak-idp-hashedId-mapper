@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 For Keycloak upstream changelog please see https://www.keycloak.org/docs/latest/release_notes/index.html.
 Full Keycloak upstream jira issue can be shown if filtered by Fix version. For example [Keycloak jira issue for 15.0.2 version](https://issues.redhat.com/browse/KEYCLOAK-19161?jql=project%20%3D%20keycloak%20and%20fixVersion%20%3D%2015.0.2)
 
+Version v1.2.0 is for Keycloak version 18 and v1.3.0 is for Keycloak version 22.
+
+## [v1.3.0] - 2-11-2023
+### Changed
+- Support Keycloak version 22
+
 ## [v1.2.0] - 1-2-2022
 ### Added
 - The plugin supports all SAML IdPs, all OIDC-based IdPs (i.e. google), and all OAUTH2-based IdPs (facebook, github, etc).
