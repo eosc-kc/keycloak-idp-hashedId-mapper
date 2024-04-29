@@ -52,14 +52,11 @@ public class UserHashedIDMapper extends AbstractIdentityProviderMapper {
 
     private static final List<ProviderConfigProperty> configProperties = new ArrayList<>();
 
-
-    public static final String HASH_ID_SALT = "hash.id.salt";
-    public static final String HASH_ID_SCOPE = "hash.id.scope";
-    public static final String ADD_ISSUER_FLAG = "add.issuer.flag";
-    public static final String SKIP_AUTHORITY_LIST = "skip.authority.list";
-    public static final String IDP_TAG_WHITELIST = "idp.tag.whitelist";
-    public static final String IDP_TAG_BLACKLIST = "idp.tag.blacklist";
-    public static final String USER_ATTRIBUTE = "user.attribute";
+    private static final String HASH_ID_SALT = "hash.id.salt";
+    private static final String HASH_ID_SCOPE = "hash.id.scope";
+    private static final String ADD_ISSUER_FLAG = "add.issuer.flag";
+    private static final String USER_ATTRIBUTE = "user.attribute";
+    private static final String USERNAME = "username";
     private static final Set<IdentityProviderSyncMode> IDENTITY_PROVIDER_SYNC_MODES = new HashSet<>(Arrays.asList(IdentityProviderSyncMode.values()));
 
 
@@ -191,7 +188,11 @@ public class UserHashedIDMapper extends AbstractIdentityProviderMapper {
         }
 
         String attribute = mapperModel.getConfig().get(USER_ATTRIBUTE);
-        context.setUserAttribute(attribute, identifier);
+        if (USERNAME.equalsIgnoreCase(attribute)) {
+            context.setUsername(identifier);
+        } else {
+            context.setUserAttribute(attribute, identifier);
+        }
 
         logger.log(Level.FINE, plainText.toString());
     }
